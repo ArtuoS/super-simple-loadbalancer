@@ -5,28 +5,35 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ArtuoS/super-simple-loadbalancer/database"
 	"github.com/ArtuoS/super-simple-loadbalancer/entity"
+	"github.com/ArtuoS/super-simple-loadbalancer/infra/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Service struct {
+	repo *repository.BalancerMongoDB
+}
+
+func NewService(repo *repository.BalancerMongoDB) *Service {
+	return &Service{
+		repo: repo,
+	}
 }
 
 func (s *Service) PushServer(id primitive.ObjectID, dns string) error {
 	server := entity.NewServer(dns, 0)
-	filter := bson.D{{"_id", id}}
 	update := bson.D{
-		{"$push", bson.D{
-			{"servers", server},
+		{Key: "$push", Value: bson.D{
+			{Key: "servers", Value: server},
 		}},
 	}
+	filter := bson.D{{Key: "_id", Value: id}}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	result, err := database.Client.Database("loadbalancer").Collection(database.Balancers).UpdateOne(ctx, filter, update)
+	result, err := s.repo.PushServer(context, filter, update)
 	if err != nil {
 		return errors.New("failed to push server")
 	}
@@ -36,4 +43,23 @@ func (s *Service) PushServer(id primitive.ObjectID, dns string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) Get(id primitive.ObjectID) ([]*entity.Balancer, error) {
+	filter := bson.D{{Key: "_id", Value: id}}
+
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := s.repo.GetServers(context, filter)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	var results []*entity.Balancer
+	if err = cursor.All(context, &results); err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	return results, nil
 }

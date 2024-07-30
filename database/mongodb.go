@@ -9,9 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var Client *mongo.Client
-
-func InitializeMongoDBClient() {
+func NewMongoDBClient() *mongo.Client {
 	ctx := context.TODO()
 	clientOptions := options.Client().ApplyURI(config.MongoURI)
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -23,5 +21,5 @@ func InitializeMongoDBClient() {
 		log.Fatal(err)
 	}
 
-	Client = client
+	return client
 }

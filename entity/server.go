@@ -2,15 +2,19 @@ package entity
 
 import (
 	"fmt"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Server struct {
-	DNS       string `json:"dns"`
-	CallCount int64  `json:"call_count"`
+	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	DNS       string             `json:"dns"`
+	CallCount int64              `json:"call_count"`
 }
 
 func NewServer(url string, callCount int64) *Server {
 	return &Server{
+		ID:        primitive.NewObjectID(),
 		DNS:       url,
 		CallCount: callCount,
 	}

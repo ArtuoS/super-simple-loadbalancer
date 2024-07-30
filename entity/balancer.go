@@ -56,8 +56,6 @@ func (b *Balancer) HandleRequest(next http.Handler) http.Handler {
 		s.CallCount++
 		url := fmt.Sprintf("%s%s", s.DNS, r.RequestURI)
 
-		log.Printf("Requisição sendo redirecionada para: %s", url)
-
 		proxyReq, err := http.NewRequest(r.Method, url, bytes.NewReader(body))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
