@@ -7,17 +7,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Balancer struct {
-	Guid    uuid.UUID `json:"guid"`
-	Servers []*Server `json:"servers"`
+	ID      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Servers []*Server          `json:"servers"`
 }
 
 func NewBalancer() *Balancer {
 	return &Balancer{
-		Guid: uuid.New(),
+		ID: primitive.NewObjectID(),
 	}
 }
 

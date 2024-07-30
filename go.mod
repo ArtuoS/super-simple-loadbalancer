@@ -4,10 +4,7 @@ go 1.22
 
 require github.com/go-chi/chi v1.5.5
 
-require (
-	github.com/google/uuid v1.6.0
-	go.mongodb.org/mongo-driver v1.16.0
-)
+require go.mongodb.org/mongo-driver v1.16.0
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect

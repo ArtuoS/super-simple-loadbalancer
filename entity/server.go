@@ -9,10 +9,10 @@ type Server struct {
 	CallCount int64  `json:"call_count"`
 }
 
-func NewServer(url string, callCount int) *Server {
+func NewServer(url string, callCount int64) *Server {
 	return &Server{
 		DNS:       url,
-		CallCount: 0,
+		CallCount: callCount,
 	}
 }
 

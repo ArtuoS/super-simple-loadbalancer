@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/ArtuoS/super-simple-loadbalancer/config"
@@ -21,7 +20,7 @@ func InitializeMongoDBClient() {
 	}
 
 	if client.Ping(context.TODO(), nil); err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 
 	Client = client
