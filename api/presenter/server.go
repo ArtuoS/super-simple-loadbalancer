@@ -6,4 +6,5 @@ type Server struct {
 	ID        primitive.ObjectID `json:"id"`
 	DNS       string             `json:"dns"`
 	CallCount int64              `json:"call_count"`
+	Capacity  int                `json:"capacity"`
 }

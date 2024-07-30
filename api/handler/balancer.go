@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -6,23 +6,16 @@ import (
 	"net/http"
 
 	"github.com/ArtuoS/super-simple-loadbalancer/api/presenter"
-	"github.com/ArtuoS/super-simple-loadbalancer/database"
-	"github.com/ArtuoS/super-simple-loadbalancer/infra/repository"
 	"github.com/ArtuoS/super-simple-loadbalancer/usecase/balancer"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func main() {
-	db := database.NewMongoDBClient()
-
-	repo := repository.NewBalancerMongoDB(db)
-	service := balancer.NewService(repo)
-
-	r := chi.NewRouter()
+func MakeBalancerHandler(r *chi.Mux, service balancer.UseCase) {
 	r.Put("/api/v1/balancer/{id}/server", func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
-			DNS string `json:"dns"`
+			DNS      string `json:"dns"`
+			Capacity int    `json:"capacity"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
@@ -33,7 +26,10 @@ func main() {
 		if err != nil {
 			log.Panic(err)
 		}
-		service.PushServer(oid, input.DNS)
+		if err := service.PushServer(oid, input.DNS, input.Capacity); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+		}
 	})
 
 	r.Get("/api/v1/balancer/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +54,7 @@ func main() {
 					ID:        s.ID,
 					DNS:       s.DNS,
 					CallCount: s.CallCount,
+					Capacity:  s.Capacity,
 				})
 			}
 
@@ -68,8 +65,4 @@ func main() {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	})
-
-	if err := http.ListenAndServe("127.0.0.1:8080", r); err != nil {
-		panic(err)
-	}
 }

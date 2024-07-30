@@ -21,8 +21,17 @@ func NewService(repo *repository.BalancerMongoDB) *Service {
 	}
 }
 
-func (s *Service) PushServer(id primitive.ObjectID, dns string) error {
-	server := entity.NewServer(dns, 0)
+func (s *Service) PushServer(id primitive.ObjectID, dns string, capacity int) error {
+	balancers, err := s.Get(id)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	if balancers[0].ExceedMaxCapacity(capacity) {
+		return errors.New("balancer capacity was exceeded")
+	}
+
+	server := entity.NewServer(dns, 0, capacity)
 	update := bson.D{
 		{Key: "$push", Value: bson.D{
 			{Key: "servers", Value: server},
@@ -35,7 +44,7 @@ func (s *Service) PushServer(id primitive.ObjectID, dns string) error {
 
 	result, err := s.repo.PushServer(context, filter, update)
 	if err != nil {
-		return errors.New("failed to push server")
+		return errors.New(err.Error())
 	}
 
 	if result.MatchedCount == 0 {

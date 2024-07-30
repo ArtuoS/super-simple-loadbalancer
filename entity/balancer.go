@@ -41,6 +41,22 @@ func (b *Balancer) getServerWithSmallerCallCounter() *Server {
 	return s
 }
 
+func (b *Balancer) ExceedMaxCapacity(capacity int) bool {
+	return (b.ActualCapacity() + capacity) > 100
+}
+
+func (b *Balancer) ActualCapacity() int {
+	if b.Servers == nil || len(b.Servers) == 0 {
+		return 0
+	}
+
+	capacity := 0
+	for _, s := range b.Servers {
+		capacity += s.Capacity
+	}
+	return capacity
+}
+
 func (b *Balancer) HandleRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)

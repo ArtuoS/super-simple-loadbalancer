@@ -9,8 +9,8 @@ import (
 
 func NewRouter() *chi.Mux {
 	balancer := entity.NewBalancer()
-	server1 := entity.NewServer("https://www.google.com", 0)
-	server2 := entity.NewServer("https://duckduckgo.com", 0)
+	server1 := entity.NewServer("https://www.google.com", 0, 0)
+	server2 := entity.NewServer("https://duckduckgo.com", 0, 0)
 
 	balancer.PushServer(server1)
 	balancer.PushServer(server2)
